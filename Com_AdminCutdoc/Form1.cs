@@ -24,16 +24,19 @@ namespace Com_AdminCutdoc
 
             var connection = System.Configuration.ConfigurationManager.ConnectionStrings["PSConnection"].ConnectionString;
             label1.Text = connection;
+            txtDate.Text = DateTime.Now.ToString("dd/MM/yyyy");
         }
 
         private void fncLoadDataHukang()
         {
             DataTable DT = new DataTable();
-            string lvSQL = "Select * From Cane_QueueData Where C_UserId = '" + txt_Userid.Text + "' ";
+            string lvSQL = "Select * From Cane_QueueData Where C_UserId = '" + txt_Userid.Text + "' AND C_Date = '" + Gstr.fncChangeTDate(txtDate.Text) + "' ";
             DT = GsysSQL.fncGetQueryData(lvSQL, DT);
 
             int lvNumrow = DT.Rows.Count;
             fpSpread1.ActiveSheet.Rows.Count = lvNumrow;
+
+            Cursor.Current = Cursors.WaitCursor;
 
             for (int i = 0; i < DT.Rows.Count; i++)
             {
@@ -56,58 +59,54 @@ namespace Com_AdminCutdoc
                 fpSpread1.ActiveSheet.Cells[i, 16].Text = DT.Rows[i]["C_Date"].ToString(); //วันที่
                 fpSpread1.ActiveSheet.Cells[i, 17].Text = DT.Rows[i]["C_Time"].ToString(); //เวลา
             }
+
+            Cursor.Current = Cursors.Default;
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
+            progressBar1.Maximum = fpSpread2.ActiveSheet.Rows.Count;
+            progressBar1.Step = 1;
+
             for (int i = 0; i < fpSpread2.ActiveSheet.Rows.Count; i++)
             {
-                if(fpSpread2.ActiveSheet.Cells[i,1].Text == "")
+
+                Cursor.Current = Cursors.WaitCursor;
+                if (fpSpread2.ActiveSheet.Cells[i,0].Text == "")
                 {
                     break;
                 }
-                string quota = fpSpread2.ActiveSheet.Cells[i, 1].Text; //โควต้า
-                fpSpread2.ActiveSheet.Cells[i, 2].Text = fncCheckQuotaName(quota); //ชื่อ
-                string carcutcode = fpSpread2.ActiveSheet.Cells[i, 3].Text; //รับเหมาตัด
-                fpSpread2.ActiveSheet.Cells[i, 4].Text = fncCheckCarcutNum(carcutcode); //เลขรถตัด
-                fpSpread2.ActiveSheet.Cells[i, 5].Text = fncCheckCarcutDriver(carcutcode); //คนขับรถตัด
-                string carcutprice = fncCheckCarcutPrice(carcutcode);
-                if(carcutprice != "") fpSpread2.ActiveSheet.Cells[i, 6].Text = fncCheckCarcutPrice(carcutcode);
 
-                string truckcontract = fpSpread2.ActiveSheet.Cells[i, 7].Text; //รับเหมาบรรทุก
-                string keebcontract = fpSpread2.ActiveSheet.Cells[i, 9].Text; //รับเหมาคีบ
-                fpSpread2.ActiveSheet.Cells[i, 10].Text = fncCheckkeebPrice(keebcontract); //ราคาคีบ
-                string allcontract = fpSpread2.ActiveSheet.Cells[i, 11].Text; //รับเหมารวม
-                fpSpread2.ActiveSheet.Cells[i, 12].Text = fncCheckkeebPrice(allcontract); //ราคารวม
-                string canename = fpSpread2.ActiveSheet.Cells[i, 16].Text;
-                fpSpread2.ActiveSheet.Cells[i, 17].Text = fncCheckCanetype(canename); //เลขประเภท
-                string car1 = fpSpread2.ActiveSheet.Cells[i, 13].Text; //ทะเบียนรถ
-                fpSpread2.ActiveSheet.Cells[i, 18].Text = fncCheckCartype(car1); //ประเภทรถ
+                string lvBillNo = "0" + fpSpread2.ActiveSheet.Cells[i, 0].Text;
+                string lvContractCarcut = fpSpread2.ActiveSheet.Cells[i, 1].Text;
+                string lvCarcutNumber = fpSpread2.ActiveSheet.Cells[i, 1].Text;
+                string lvContractPrice = fpSpread2.ActiveSheet.Cells[i, 2].Text;
+                string lvTruckContract = fpSpread2.ActiveSheet.Cells[i, 3].Text;
+                string lvTruckPrice = fpSpread2.ActiveSheet.Cells[i, 4].Text;
+                string lvKeepContract = fpSpread2.ActiveSheet.Cells[i, 5].Text;
+                string lvKeepPrice = fpSpread2.ActiveSheet.Cells[i, 6].Text;
+                string lvAllContract = fpSpread2.ActiveSheet.Cells[i, 7].Text;
+                string lvAllPrice = fpSpread2.ActiveSheet.Cells[i, 8].Text;
+                string lvQuota = fncCheckQuota(lvBillNo);
+                fpSpread2.ActiveSheet.Cells[i, 9].Text = lvQuota;
+                fpSpread2.ActiveSheet.Cells[i, 10].Text = fncCheckQuotaName(lvQuota);
+                fpSpread2.ActiveSheet.Cells[i, 11].Text = fncCheckCarcutDriver(lvCarcutNumber);
+                fpSpread2.ActiveSheet.Cells[i, 12].Text = fncCheckCanetype(lvBillNo);
+                if (fpSpread2.ActiveSheet.Cells[i, 12].Text == "11" || fpSpread2.ActiveSheet.Cells[i, 12].Text == "12") fpSpread2.ActiveSheet.Cells[i, 13].Text = "รถตัดใน";
+                else if (fpSpread2.ActiveSheet.Cells[i, 12].Text == "5" || fpSpread2.ActiveSheet.Cells[i, 12].Text == "6") fpSpread2.ActiveSheet.Cells[i, 13].Text = "รถตัดนอก";
+                else fpSpread2.ActiveSheet.Cells[i, 13].Text = "ตัดมือ";
+                fpSpread2.ActiveSheet.Cells[i, 14].Text = fncCheckCarNum1(lvBillNo);
+                fpSpread2.ActiveSheet.Cells[i, 15].Text = fncCheckCarNum2(lvBillNo);
+                fpSpread2.ActiveSheet.Cells[i, 16].Text = fncCheckCartype(lvBillNo);
+                if (lvTruckPrice != "") fpSpread2.ActiveSheet.Cells[i, 17].Text = "ชำระ";
+                else fpSpread2.ActiveSheet.Cells[i, 17].Text = "ไม่ชำระ";
+                fpSpread2.ActiveSheet.Cells[i, 18].Text = fncCheckQNo(lvBillNo);
 
-                if(canename == "อ้อยสดรถตัดนอก")
-                {
-                    fpSpread2.ActiveSheet.Cells[i, 19].Text = "รถตัดนอก"; //ประเภทรถตัด
-                }
-                else if (canename == "อ้อยสดรถตัด")
-                {
-                    fpSpread2.ActiveSheet.Cells[i, 19].Text = "รถตัดใน"; //ประเภทรถตัด
-                }
-                else
-                {
-                    fpSpread2.ActiveSheet.Cells[i, 19].Text = "คนตัด";
-                }
-
-                if(fpSpread2.ActiveSheet.Cells[i, 8].Text != "")
-                {
-                    fpSpread2.ActiveSheet.Cells[i, 20].Text = "ชำระ";
-                }
-                else
-                {
-                    fpSpread2.ActiveSheet.Cells[i, 20].Text = "ไม่ชำระ";
-                }
-
-
+                progressBar1.PerformStep();
             }
+
+            progressBar1.Value = fpSpread2.ActiveSheet.Rows.Count;
+            Cursor.Current = Cursors.Default;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -153,38 +152,43 @@ namespace Com_AdminCutdoc
 
             int sheetrows = fpSpread2.ActiveSheet.Rows.Count;
 
+            progressBar1.Maximum = sheetrows;
+            progressBar1.Step = 1;
+
             for (int i = 0; i < sheetrows; i++)
             {
-                
-                if(fpSpread2.ActiveSheet.Cells[i, 1].Text == "")
+                Cursor.Current = Cursors.WaitCursor;
+                if (fpSpread2.ActiveSheet.Cells[i, 0].Text == "")
                 {
                     break;
                 }
                 else
                 {
-                    C_Quota = fpSpread2.ActiveSheet.Cells[i, 1].Text;
-                    C_FullName = fpSpread2.ActiveSheet.Cells[i, 2].Text;
-                    C_CutContactorId = fpSpread2.ActiveSheet.Cells[i, 3].Text;
-                    C_CarcutNumber = fpSpread2.ActiveSheet.Cells[i, 4].Text;
-                    C_DriverId = fpSpread2.ActiveSheet.Cells[i, 5].Text;
-                    C_Price = fpSpread2.ActiveSheet.Cells[i, 6].Text;
-                    C_ContractorId = fpSpread2.ActiveSheet.Cells[i, 7].Text;
-                    C_TruckPrice = fpSpread2.ActiveSheet.Cells[i, 8].Text;
-                    if (C_ContractorId != "")
-                    {
-                        C_BoxTruckId = fpSpread2.ActiveSheet.Cells[i, 13].Text;
-                    }
-                    C_PayStatus = fpSpread2.ActiveSheet.Cells[i, 20].Text;
-                    C_TruckCarnum = fpSpread2.ActiveSheet.Cells[i, 13].Text;
-                    C_TruckCarnum2 = fpSpread2.ActiveSheet.Cells[i, 14].Text;
+                    
+                    Q_BillingNos = "00" + fpSpread2.ActiveSheet.Cells[i, 0].Text;
+                    C_CutContactorId = fpSpread2.ActiveSheet.Cells[i, 1].Text;
+                    C_CarcutNumber = fpSpread2.ActiveSheet.Cells[i, 1].Text;
+                    C_Price = fpSpread2.ActiveSheet.Cells[i, 2].Text;
+                    C_ContractorId = fpSpread2.ActiveSheet.Cells[i, 3].Text;
+                    C_TruckPrice = fpSpread2.ActiveSheet.Cells[i, 4].Text;
+                    if (C_TruckPrice != "") C_BoxTruckId = fpSpread2.ActiveSheet.Cells[i, 14].Text;
+                    C_KeebContractorId = fpSpread2.ActiveSheet.Cells[i, 5].Text;
+                    C_KeebContractorPrice = fpSpread2.ActiveSheet.Cells[i, 6].Text;
+                    C_AllContractor = fpSpread2.ActiveSheet.Cells[i, 7].Text;
+                    C_AllPrice = fpSpread2.ActiveSheet.Cells[i, 8].Text;
+                    C_Quota = fpSpread2.ActiveSheet.Cells[i, 9].Text;
+                    C_FullName = fpSpread2.ActiveSheet.Cells[i, 10].Text;
+                    C_DriverId = fpSpread2.ActiveSheet.Cells[i, 11].Text;
+                    C_CaneType = fpSpread2.ActiveSheet.Cells[i, 12].Text;
+                    C_ContracType = fpSpread2.ActiveSheet.Cells[i, 13].Text;
+                    C_TruckCarnum = fpSpread2.ActiveSheet.Cells[i, 14].Text;
+                    C_TruckCarnum2 = fpSpread2.ActiveSheet.Cells[i, 15].Text;
+                    C_TruckType = fpSpread2.ActiveSheet.Cells[i, 16].Text;
+                    C_PayStatus = fpSpread2.ActiveSheet.Cells[i, 17].Text;
+                    C_Queue = fpSpread2.ActiveSheet.Cells[i, 18].Text;
+                    C_QueueStatus = "รับข้อมูลเข้า";
                     C_Date = Gstr.fncChangeTDate(DateTime.Now.ToString("dd/MM/yyyy"));
-                    C_Time = DateTime.Now.ToString("HH:mm:ss").ToString();
-                    C_KeebContractorId = fpSpread2.ActiveSheet.Cells[i, 9].Text;
-                    C_KeebContractorPrice = fpSpread2.ActiveSheet.Cells[i, 10].Text;
-                    C_AllContractor = fpSpread2.ActiveSheet.Cells[i, 11].Text;
-                    C_AllPrice = fpSpread2.ActiveSheet.Cells[i, 12].Text;
-                    C_TruckType = fpSpread2.ActiveSheet.Cells[i, 18].Text;
-                    C_Queue = fpSpread2.ActiveSheet.Cells[i, 15].Text;
+                    C_Time = DateTime.Now.ToString("HH:mm:ss");
 
 
                     string SQL = "INSERT INTO Cane_QueueData (C_PlanId,C_PlanName,C_Quota,C_FullName,C_GisRai,C_UserId,C_CarcutNumber,C_DriverId,C_Price,C_BoxTruckId, C_ContractorId,C_TruckPrice,C_PayStatus,C_TruckCarnum, ";
@@ -196,13 +200,45 @@ namespace Com_AdminCutdoc
                     SQL += "'" + C_DriverId2 + "','" + C_bonsucro + "','" + C_QuotaChild + "','" + C_TruckType + "','" + C_ContracType + "','" + C_AllContractor + "','" + C_AllPrice + "', ";
                     SQL += "'" + C_SuccessStatus + "','" + Q_WeightINTimeDate + "','" + Q_WeightTimeOUTDate + "','" + Q_QueueTimeDate + "','" + Q_BillingNos + "' )";
                     result = GsysSQL.fncExecuteQueryData(SQL);
+
+                    progressBar1.PerformStep();
                 }
             }
 
-            if(result == "Success")
+            progressBar1.Value = sheetrows;
+            Cursor.Current = Cursors.Default;
+
+            if (result == "Success")
             {
                 fncLoadDataHukang();
             }
+        }
+
+        public static string fncCheckQuota(string lvSearch)
+        {
+            #region //Connect Database 
+            SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PSConnection"].ToString());
+            SqlCommand cmd = new SqlCommand();
+            SqlDataReader dr;
+            #endregion  
+
+            string lvReturn = "";
+
+            cmd.Connection = con;
+            con.Open();
+            cmd.CommandText = "SELECT Q_Quota FROM Queue_Diary WHERE Q_BillingNo = '" + lvSearch + "' ";
+            dr = cmd.ExecuteReader();
+            if (dr.HasRows)
+            {
+                while (dr.Read())
+                {
+                    lvReturn = dr["Q_Quota"].ToString();
+                }
+            }
+            dr.Close();
+            con.Close();
+
+            return lvReturn;
         }
 
         public static string fncCheckQuotaName(string lvSearch)
@@ -379,13 +415,94 @@ namespace Com_AdminCutdoc
 
             cmd.Connection = con;
             con.Open();
-            cmd.CommandText = "SELECT C_ID FROM Cane_CaneType WHERE C_Name = '" + lvSearch + "' ";
+            cmd.CommandText = "SELECT Q_CaneType FROM Queue_Diary WHERE Q_BillingNo = '" + lvSearch + "' ";
             dr = cmd.ExecuteReader();
             if (dr.HasRows)
             {
                 while (dr.Read())
                 {
-                    lvReturn = dr["C_ID"].ToString();
+                    lvReturn = dr["Q_CaneType"].ToString();
+                }
+            }
+            dr.Close();
+            con.Close();
+
+            return lvReturn;
+        }
+
+        public static string fncCheckCarNum1(string lvSearch)
+        {
+            #region //Connect Database 
+            SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PSConnection"].ToString());
+            SqlCommand cmd = new SqlCommand();
+            SqlDataReader dr;
+            #endregion  
+
+            string lvReturn = "";
+
+            cmd.Connection = con;
+            con.Open();
+            cmd.CommandText = "SELECT Q_CarNum FROM Queue_Diary WHERE Q_BillingNo = '" + lvSearch + "' ";
+            dr = cmd.ExecuteReader();
+            if (dr.HasRows)
+            {
+                while (dr.Read())
+                {
+                    lvReturn = dr["Q_CarNum"].ToString();
+                }
+            }
+            dr.Close();
+            con.Close();
+
+            return lvReturn;
+        }
+
+        public static string fncCheckCarNum2(string lvSearch)
+        {
+            #region //Connect Database 
+            SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PSConnection"].ToString());
+            SqlCommand cmd = new SqlCommand();
+            SqlDataReader dr;
+            #endregion  
+
+            string lvReturn = "";
+
+            cmd.Connection = con;
+            con.Open();
+            cmd.CommandText = "SELECT Q_CarNum2 FROM Queue_Diary WHERE Q_BillingNo = '" + lvSearch + "' ";
+            dr = cmd.ExecuteReader();
+            if (dr.HasRows)
+            {
+                while (dr.Read())
+                {
+                    lvReturn = dr["Q_CarNum2"].ToString();
+                }
+            }
+            dr.Close();
+            con.Close();
+
+            return lvReturn;
+        }
+
+        public static string fncCheckQNo(string lvSearch)
+        {
+            #region //Connect Database 
+            SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PSConnection"].ToString());
+            SqlCommand cmd = new SqlCommand();
+            SqlDataReader dr;
+            #endregion  
+
+            string lvReturn = "";
+
+            cmd.Connection = con;
+            con.Open();
+            cmd.CommandText = "SELECT Q_No FROM Queue_Diary WHERE Q_BillingNo = '" + lvSearch + "' ";
+            dr = cmd.ExecuteReader();
+            if (dr.HasRows)
+            {
+                while (dr.Read())
+                {
+                    lvReturn = dr["Q_No"].ToString();
                 }
             }
             dr.Close();
@@ -406,13 +523,13 @@ namespace Com_AdminCutdoc
 
             cmd.Connection = con;
             con.Open();
-            cmd.CommandText = "SELECT T_TruckType FROM Cane_Truck WHERE T_TruckCarRegistration = '" + lvSearch + "' ";
+            cmd.CommandText = "SELECT Q_CarType FROM Queue_Diary WHERE Q_BillingNo = '" + lvSearch + "' ";
             dr = cmd.ExecuteReader();
             if (dr.HasRows)
             {
                 while (dr.Read())
                 {
-                    lvReturn = dr["T_TruckType"].ToString();
+                    lvReturn = dr["Q_CarType"].ToString();
                 }
             }
             dr.Close();

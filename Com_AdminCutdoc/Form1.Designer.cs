@@ -39,6 +39,8 @@
             this.button3 = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
+            this.txtDate = new System.Windows.Forms.TextBox();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             ((System.ComponentModel.ISupportInitialize)(this.fpSpread1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fpSpread1_Sheet1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.fpSpread2)).BeginInit();
@@ -93,7 +95,7 @@
             // Formulas and custom names must be loaded with R1C1 reference style
             this.fpSpread2_Sheet1.ReferenceStyle = FarPoint.Win.Spread.Model.ReferenceStyle.R1C1;
             fpSpread2_Sheet1.ColumnCount = 25;
-            fpSpread2_Sheet1.RowCount = 200;
+            fpSpread2_Sheet1.RowCount = 1000;
             this.fpSpread2_Sheet1.RowHeader.Columns.Default.Resizable = false;
             this.fpSpread2_Sheet1.ReferenceStyle = FarPoint.Win.Spread.Model.ReferenceStyle.A1;
             // 
@@ -157,11 +159,28 @@
             this.label3.TabIndex = 8;
             this.label3.Text = "วางข้อมูล";
             // 
+            // txtDate
+            // 
+            this.txtDate.Location = new System.Drawing.Point(293, 14);
+            this.txtDate.Name = "txtDate";
+            this.txtDate.Size = new System.Drawing.Size(136, 20);
+            this.txtDate.TabIndex = 9;
+            // 
+            // progressBar1
+            // 
+            this.progressBar1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.progressBar1.Location = new System.Drawing.Point(0, 755);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(1884, 31);
+            this.progressBar1.TabIndex = 10;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1884, 729);
+            this.ClientSize = new System.Drawing.Size(1884, 786);
+            this.Controls.Add(this.progressBar1);
+            this.Controls.Add(this.txtDate);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.button3);
@@ -196,6 +215,8 @@
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox txtDate;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 
